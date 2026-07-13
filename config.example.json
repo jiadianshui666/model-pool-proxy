@@ -1,0 +1,13 @@
+{
+  "api_key_env": "MODEL_POOL_API_KEY",
+  "base_url": "https://your-api-endpoint.example.com/v1",
+  "api_format": "auto",
+  "bind_host": "127.0.0.1",
+  "port": 19190,
+  "timeout_seconds": 300,
+  "models": [
+    "model-a",
+    "model-b",
+    "model-c"
+  ]
+}

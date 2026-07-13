@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model Pool Proxy Config</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #697386;
+      --line: #d9e0ea;
+      --accent: #275cd3;
+      --danger: #b42318;
+      --ok: #117a55;
+      --shadow: 0 1px 2px rgba(23, 32, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .wrap {
+      width: min(960px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 650;
+    }
+
+    main {
+      padding: 22px 0 32px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fafcff;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+    }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      line-height: 1.4;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(39, 92, 211, 0.12);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    button,
+    a.button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 7px 12px;
+      font: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button.danger {
+      border-color: #f0b8b8;
+      background: #fff5f5;
+      color: var(--danger);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    .checkline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .checkline input {
+      width: auto;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      min-height: 20px;
+      padding: 0 14px 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.error { color: var(--danger); }
+
+    .results {
+      padding: 0 14px 14px;
+      overflow-x: auto;
+    }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 4px 0 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin-top: 4px;
+    }
+
+    th,
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      background: #fafcff;
+    }
+
+    .model-cell,
+    .message-cell {
+      overflow-wrap: anywhere;
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 54px;
+      height: 24px;
+      border-radius: 999px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .pill.ok {
+      background: #e9f7f1;
+      color: var(--ok);
+    }
+
+    .pill.fail {
+      background: #fff0f0;
+      color: var(--danger);
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .form {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        width: min(100% - 20px, 960px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>Proxy Config</h1>
+        <div class="meta" id="summary">Loading</div>
+      </div>
+      <div class="row">
+        <a class="button" href="/">Status</a>
+        <button id="reloadBtn" type="button">Reload</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <div class="section-head">
+        <h2>Upstream</h2>
+        <span class="meta" id="keyState">-</span>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="baseUrl">API 地址</label>
+          <input id="baseUrl" autocomplete="off" spellcheck="false" placeholder="https://api.example.com/v1">
+        </div>
+
+        <div class="field">
+          <label for="apiFormat">接口格式</label>
+          <select id="apiFormat">
+            <option value="auto">Auto</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="openai">OpenAI</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="timeout">超时秒数</label>
+          <input id="timeout" type="number" min="5" step="1">
+        </div>
+
+        <div class="field full">
+          <label for="apiKey">API Key</label>
+          <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="留空则保留环境变量里的当前密钥">
+        </div>
+
+        <div class="field full">
+          <label class="checkline"><input id="clearKey" type="checkbox"> 清空已保存密钥</label>
+        </div>
+
+        <div class="field full">
+          <label for="models">模型名称（每行一个，数量不限）</label>
+          <textarea id="models" spellcheck="false" placeholder="gpt-4.1-mini&#10;claude-3-5-haiku-latest&#10;your-model-name"></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="saveBtn" type="button">Save</button>
+        <button id="testFirstBtn" type="button">Test First Model</button>
+        <button id="testAllBtn" type="button">Test All Models</button>
+        <button id="resetBtn" type="button">Reset Form</button>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="results" id="testResults"></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const fields = {
+      baseUrl: $('baseUrl'),
+      apiFormat: $('apiFormat'),
+      timeout: $('timeout'),
+      apiKey: $('apiKey'),
+      clearKey: $('clearKey'),
+      models: $('models')
+    };
+    const saveBtn = $('saveBtn');
+    const testFirstBtn = $('testFirstBtn');
+    const testAllBtn = $('testAllBtn');
+    const reloadBtn = $('reloadBtn');
+    const resetBtn = $('resetBtn');
+    const statusNode = $('status');
+    const testResults = $('testResults');
+    let currentConfig = null;
+
+    function setStatus(message, kind = '') {
+      statusNode.className = 'status ' + kind;
+      statusNode.textContent = message;
+    }
+
+    function setBusy(value) {
+      saveBtn.disabled = value;
+      testFirstBtn.disabled = value;
+      testAllBtn.disabled = value;
+      reloadBtn.disabled = value;
+      resetBtn.disabled = value;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, { cache: 'no-store', ...options });
+      const body = await response.json();
+      if (!response.ok) {
+        const message = body && body.error && body.error.message ? body.error.message : JSON.stringify(body);
+        throw new Error(message);
+      }
+      return body;
+    }
+
+    function formPayload(extra = {}) {
+      return {
+        base_url: fields.baseUrl.value.trim(),
+        api_format: fields.apiFormat.value,
+        timeout_seconds: Number(fields.timeout.value || 300),
+        api_key: fields.apiKey.value.trim(),
+        clear_api_key: fields.clearKey.checked,
+        models_text: fields.models.value,
+        ...extra
+      };
+    }
+
+    function fillForm(config) {
+      currentConfig = config;
+      fields.baseUrl.value = config.base_url || '';
+      fields.apiFormat.value = config.api_format || 'auto';
+      fields.timeout.value = config.timeout_seconds || 300;
+      fields.apiKey.value = '';
+      fields.clearKey.checked = false;
+      fields.models.value = config.models_text || '';
+      $('keyState').textContent = config.has_api_key
+        ? `API Key saved in ${config.api_key_env || 'environment'}`
+        : `No API Key in ${config.api_key_env || 'environment'}`;
+      $('summary').textContent = `当前列表：${config.model_count || 0} 个模型 | 识别接口：${config.detected_format || '-'}`;
+    }
+
+    async function loadConfig() {
+      setBusy(true);
+      try {
+        const config = await api('/config');
+        fillForm(config);
+        setStatus('Loaded', 'ok');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function saveConfig() {
+      const payload = formPayload();
+      setBusy(true);
+      try {
+        const result = await api('/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        fillForm(result.config);
+        setStatus('Saved and applied', 'ok');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function currentModelLines() {
+      return fields.models.value
+        .replaceAll(',', '\n')
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+    }
+
+    function removeModelFromTextarea(model) {
+      const target = String(model || '').trim();
+      if (!target) return;
+      const before = currentModelLines();
+      const after = before.filter(item => item !== target);
+      fields.models.value = after.join('\n');
+      const removed = before.length - after.length;
+      if (removed > 0) {
+        setStatus(`Removed ${target} from the model list. Click Save to apply.`, 'ok');
+      } else {
+        setStatus(`${target} was not found in the model list.`, 'error');
+      }
+    }
+
+    function removeModelsFromTextarea(models) {
+      const targets = new Set((models || []).map(model => String(model || '').trim()).filter(Boolean));
+      if (targets.size === 0) return 0;
+      const before = currentModelLines();
+      const after = before.filter(item => !targets.has(item));
+      fields.models.value = after.join('\n');
+      return before.length - after.length;
+    }
+
+    function renderTestResults(result) {
+      if (!result || !result.results) {
+        testResults.innerHTML = '';
+        return;
+      }
+      const failedModels = result.results.filter(item => !item.ok).map(item => item.model).filter(Boolean);
+      const rows = result.results.map(item => `
+        <tr data-model="${escapeHtml(item.model || '')}" data-ok="${item.ok ? '1' : '0'}">
+          <td><span class="pill ${item.ok ? 'ok' : 'fail'}">${item.ok ? 'OK' : 'Fail'}</span></td>
+          <td class="model-cell">${escapeHtml(item.model || '')}</td>
+          <td class="num">${item.status === null || item.status === undefined ? '-' : item.status}</td>
+          <td class="num">${item.latency_ms === null || item.latency_ms === undefined ? '-' : item.latency_ms}</td>
+          <td class="message-cell">${escapeHtml(item.message || '')}</td>
+          <td><button class="danger delete-model" type="button" data-model="${escapeHtml(item.model || '')}">Delete</button></td>
+        </tr>
+      `).join('');
+      const failedAction = failedModels.length
+        ? `<button class="danger" id="deleteFailedBtn" type="button">Delete Failed (${failedModels.length})</button>`
+        : '';
+      testResults.innerHTML = `
+        <div class="result-actions">
+          <span class="meta">${result.ok_count} OK / ${result.failed_count} failed</span>
+          ${failedAction}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 76px;">Result</th>
+              <th>Model</th>
+              <th style="width: 82px;" class="num">HTTP</th>
+              <th style="width: 96px;" class="num">ms</th>
+              <th>Message</th>
+              <th style="width: 92px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      for (const button of testResults.querySelectorAll('.delete-model')) {
+        button.addEventListener('click', () => {
+          removeModelFromTextarea(button.dataset.model);
+          button.closest('tr').remove();
+        });
+      }
+      const deleteFailedBtn = document.getElementById('deleteFailedBtn');
+      if (deleteFailedBtn) {
+        deleteFailedBtn.addEventListener('click', () => {
+          const removed = removeModelsFromTextarea(failedModels);
+          for (const row of testResults.querySelectorAll('tr[data-ok="0"]')) {
+            row.remove();
+          }
+          deleteFailedBtn.remove();
+          setStatus(`Removed ${removed} failed model(s) from the model list. Click Save to apply.`, removed ? 'ok' : 'error');
+        });
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function testConfig(mode) {
+      const payload = formPayload({ mode });
+      setBusy(true);
+      testResults.innerHTML = '';
+      setStatus(mode === 'all' ? 'Testing all models...' : 'Testing first model...');
+      try {
+        const result = await api('/config/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        renderTestResults(result);
+        setStatus(
+          `Tested ${result.tested} model(s), ${result.ok_count} OK, ${result.failed_count} failed | ${result.format}`,
+          result.failed_count ? 'error' : 'ok'
+        );
+      } catch (error) {
+        setStatus(error.message, 'error');
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    saveBtn.addEventListener('click', saveConfig);
+    testFirstBtn.addEventListener('click', () => testConfig('first'));
+    testAllBtn.addEventListener('click', () => testConfig('all'));
+    reloadBtn.addEventListener('click', loadConfig);
+    resetBtn.addEventListener('click', () => {
+      if (currentConfig) fillForm(currentConfig);
+      setStatus('Form reset');
+    });
+
+    loadConfig();
+  </script>
+</body>
+</html>
